@@ -29,7 +29,7 @@ const Signup = () => {
             }
         } catch (error) {
             setSuccess(false);
-            setMessage('Error during sign-up: ' + error.message);
+            setMessage('Email already in used');
         }
     };
 

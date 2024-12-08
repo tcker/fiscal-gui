@@ -68,7 +68,7 @@ public class AuthController {
         } catch (Exception e) {
             // Log the exception stack trace
             e.printStackTrace();
-            return new ResponseEntity<>(new ApiResponse("Error during sign-up: " + e.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ApiResponse("Email already been used", false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
