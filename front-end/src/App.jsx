@@ -1,12 +1,14 @@
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Login from "../components/Login";
-import Signup from "../components/SignUp";
-import Dashboard from "../components/Dashboard";
+import Login from "./components/Login";
+import Signup from "./components/SignUp";
+import Dashboard from "./components/Dashboard";
+import LandingPage from "./components/LandingPage";
+import './index.css';
 
 function App() {
   return (
-    <Router>
+    <Router>  
       <Routes>
         {/* Route for the Login page */}
         <Route path="/login" element={<Login />} />
@@ -18,7 +20,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         
         {/* You can set the default route (e.g., redirect to login if no route matches) */}
-        <Route path="/" element={<Login />} />
+        <Route path="/" element={<LandingPage />} />
       </Routes>
     </Router>
   );
