@@ -11,8 +11,12 @@ cd to back-end
 
 ```
 cd back-end
+
+# only for recompiling the project (back-end springboot)
 mvn clean install -U
-mvn exec:java
+# only for recompiling the project (back-end springboot)
+
+mvn spring-boot:run
 ```
 
 run this on terminal only applicable to @tcker

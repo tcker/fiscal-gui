@@ -2,5 +2,8 @@ miscellaneous/Fiscal_Harmony_OOP-PRESENTATON.pdf
 miscellaneous/OOP SCRIPT.txt
 
 back-end/target
+back-end/src/main/resources
+back-end/src/main/resources/serviceAccountKey.json
+back-end/lib
 back-end/pom.xml
 front-end/.env
