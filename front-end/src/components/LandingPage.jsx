@@ -1,5 +1,13 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import fiscaWhite from '../assets/images/LOGO.png';
+import fiscalLogo from '../assets/images/FISCAL_LOGO.png';
+import gcashDark from '../assets/images/GCASH_DARK_MODE.png';
+import seabankDark from '../assets/images/SEABANK_DARK_MODE.png';
+import unionDark from '../assets/images/UNION_BANK_DARK_MODE.png';
+import bpiDark from '../assets/images/BPI_DARK_MODE.png';
+import landbankDark from '../assets/images/LANDBANK_DARK_MODE.png';
+
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -58,19 +66,19 @@ const LandingPage = () => {
         save with ease
       </div>
       <div style={styles.trusted}>Trusted By:</div>
-      <img src="FISCAL LOGO DARK MODE.png" alt="Logo" style={styles.image} />
-      <img src="GCASH DARK MODE.png" alt="Logo" style={styles.gcash} />
-      <img src="SEABANK DARK MODE.png" alt="Logo" style={styles.seabank} />
-      <img src="UNION BANK DARK MODE.png" alt="Logo" style={styles.union} />
-      <img src="BPI DARK MODE.png" alt="Logo" style={styles.bpi} />
-      <img src="LANDBANK DARK MODE.png" alt="Logo" style={styles.landbank} />
-      <img src="FISCAL LOGO.png" alt="Logo" style={styles.logo} />
+      <img src={fiscaWhite} alt="Logo" style={styles.image} />
+      <img src={gcashDark} alt="Logo" style={styles.gcash} />
+      <img src={seabankDark} alt="Logo" style={styles.seabank} />
+      <img src={unionDark} alt="Logo" style={styles.union} />
+      <img src={bpiDark} alt="Logo" style={styles.bpi} />
+      <img src={landbankDark} alt="Logo" style={styles.landbank} />
+      <img src={fiscalLogo} alt="Logo" style={styles.logo} />
     </div>
   );
 };
 
 const styles = {
-  container: {
+  container: {  
     width: '100vw',
     height: '100vh',
     backgroundColor: 'black',
@@ -248,12 +256,11 @@ const styles = {
     right: '100px',
   },
   logo: {
-    width: '600px',
-    height: '1220px',
+    width: '800px',
+    height: '800px',
     position: 'absolute',
-    bottom: '45px',
-    right: '350px',
-  },
+    right: '220px',
+  },  
 };
 
 export default LandingPage;
