@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";  // Modular imports
 import { initializeApp } from "firebase/app";  // Modular imports
+import { useNavigate } from "react-router-dom";  // Import the useNavigate hook
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -22,6 +23,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
+  const navigate = useNavigate();  // Initialize the useNavigate hook for redirection
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -46,9 +48,18 @@ const Login = () => {
       });
 
       const data = await response.json();
-      setMessage(data.message);  // Display the response message
+      console.log("Response from backend:", data);  // Log the response from the backend
+
+      if (data.message === "Login successful!") {
+        console.log("Login successful. Navigating to dashboard...");
+        setMessage("Login successful");
+        navigate("/dashboard");  // Directly navigate to the dashboard here
+      } else {
+        setError("Login failed.");
+      }
     } catch (err) {
       setError("Failed to login. Please try again.");
+      console.error("Error during login:", err);  // Log the error
     }
   };
 
