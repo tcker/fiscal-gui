@@ -1,127 +1,206 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { initializeApp } from 'firebase/app';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import {
+  getFirestore,
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  setDoc,
+  updateDoc,
+  arrayUnion,
+} from 'firebase/firestore';
+
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDnBYIpQ8PyIQ787wTBYD1xy9FSo31VNSU",
+  authDomain: "test-java-fiscal.firebaseapp.com",
+  databaseURL: "https://test-java-fiscal-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "test-java-fiscal",
+  storageBucket: "test-java-fiscal.firebasestorage.app",
+  messagingSenderId: "996027067041",
+  appId: "1:996027067041:web:dddd73ba9a1e1dbfb91ee0",
+  measurementId: "G-QE50XLGR51"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 export default function IncExp() {
-  const [income, setIncome] = useState({ category: '', amount: 0.0 });
-  const [expense, setExpense] = useState({ category: '', amount: 0.0 });
-  const [totalIncome, setTotalIncome] = useState(0.0);
-  const [totalExpense, setTotalExpense] = useState(0.0);
+  const [income, setIncome] = useState({ category: '', amount: 0 });
+  const [expense, setExpense] = useState({ category: '', amount: 0 });
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalExpense, setTotalExpense] = useState(0);
+  const [totalFunds, setTotalFunds] = useState(0);  // Added state for totalFunds
   const [history, setHistory] = useState([]);
   const [warning, setWarning] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userId, setUserId] = useState(null); 
 
-  const handleIncomeChange = (e) => {
-    const { name, value } = e.target;
-    setIncome({ ...income, [name]: name === 'amount' ? parseFloat(value) : value });
-  };
-
-  const handleExpenseChange = (e) => {
-    const { name, value } = e.target;
-    setExpense({ ...expense, [name]: name === 'amount' ? parseFloat(value) : value });
-  };
-
-  const handleSubmit = (type) => {
-    const currentDate = new Date().toLocaleString();
-    if (type === 'income') {
-      setTotalIncome(totalIncome + income.amount);
-      setHistory([...history, { type: 'Income', category: income.category, amount: income.amount, date: currentDate }]);
-    } else if (type === 'expense') {
-      if (totalExpense + expense.amount > totalIncome) {
-        setWarning('Insufficient funds for this expense.');
+  // Fetch and set current user and Firestore ID
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        setCurrentUser(user);
+        const userQuery = query(
+          collection(db, 'users'),
+          where('email', '==', user.email)
+        );
+        const querySnapshot = await getDocs(userQuery);
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0];
+          setUserId(userDoc.id);
+          const data = userDoc.data();
+          setTotalIncome(data.totalIncome || 0);
+          setTotalExpense(data.totalExpense || 0);
+          setHistory(data.history || []);
+          setTotalFunds(data.totalFunds || 0);  // Fetch totalFunds from Firestore
+        } else {
+          const userRef = doc(db, 'users', user.uid);
+          await setDoc(userRef, {
+            email: user.email,
+            totalIncome: 0,
+            totalExpense: 0,
+            totalFunds: 0,  // Initialize totalFunds
+            history: [],
+          });
+          setUserId(user.uid);
+        }
       } else {
-        setTotalExpense(totalExpense + expense.amount);
-        setHistory([...history, { type: 'Expense', category: expense.category, amount: expense.amount, date: currentDate }]);
-        setWarning('');
+        setCurrentUser(null);
+        setUserId(null);
+        setTotalIncome(0);
+        setTotalExpense(0);
+        setTotalFunds(0);  // Reset totalFunds
+        setHistory([]);
       }
+    });
+    return unsubscribe;
+  }, []);
+
+  const handleChange = (e, type) => {
+    const { name, value } = e.target;
+    const updateState = type === 'income' ? setIncome : setExpense;
+    updateState((prev) => ({
+      ...prev,
+      [name]: name === 'amount' ? parseFloat(value) || 0 : value,
+    }));
+  };
+
+  const updateTotalFunds = async (newIncome, newExpense) => {
+    const newTotalFunds = newIncome - newExpense;
+    setTotalFunds(newTotalFunds);
+    
+    // Update Firestore with new totalFunds
+    if (userId) {
+      const userRef = doc(db, 'users', userId);
+      await updateDoc(userRef, {
+        totalFunds: newTotalFunds,
+      });
     }
   };
 
+  const handleSubmit = async (type) => {
+    if (!currentUser || !userId) {
+      setWarning('You must be logged in to submit data.');
+      return;
+    }
+
+    const entry = {
+      type: type === 'income' ? 'Income' : 'Expense',
+      category: type === 'income' ? income.category : expense.category,
+      amount: type === 'income' ? income.amount : expense.amount,
+      date: new Date().toLocaleString(),
+    };
+
+    const userRef = doc(db, 'users', userId);
+
+    if (type === 'income') {
+      const newTotal = totalIncome + entry.amount;
+      setTotalIncome(newTotal);
+      await updateDoc(userRef, {
+        totalIncome: newTotal,
+        history: arrayUnion(entry),
+      });
+      updateTotalFunds(newTotal, totalExpense);
+    } else {
+      if (totalIncome < totalExpense + entry.amount) {
+        setWarning('Insufficient funds for this expense.');
+        return;
+      }
+      const newTotal = totalExpense + entry.amount;
+      setTotalExpense(newTotal);
+      await updateDoc(userRef, {
+        totalExpense: newTotal,
+        history: arrayUnion(entry),
+      });
+      updateTotalFunds(totalIncome, newTotal);
+    }
+    setHistory((prev) => [...prev, entry]);
+    setWarning('');
+  };
+
   return (
-    <div className="min-h-screen bg-black text-white font-sans">
-      <div className="max-w-4xl mx-auto py-10 px-5">
-        <h1 className="text-4xl font-bold text-center mb-10">Income & Expense Tracker</h1>
-
-        <div className="grid grid-cols-2 gap-8">
-          {/* Income Section */}
-          <div className="p-5 bg-gray-900 rounded-lg">
-            <h2 className="text-xl font-medium mb-4">Add Income</h2>
-            <input
-              type="text"
-              name="category"
-              placeholder="Category"
-              value={income.category}
-              onChange={handleIncomeChange}
-              className="w-full p-2 mb-4 bg-gray-800 text-white rounded-md"
-            />
-            <input
-              type="number"
-              name="amount"
-              placeholder="Amount"
-              value={income.amount}
-              onChange={handleIncomeChange}
-              className="w-full p-2 mb-4 bg-gray-800 text-white rounded-md"
-            />
-            <button
-              onClick={() => handleSubmit('income')}
-              className="w-full bg-green-500 py-2 rounded-md text-white hover:bg-green-700"
-            >
-              Submit Income
-            </button>
-          </div>
-
-          {/* Expense Section */}
-          <div className="p-5 bg-gray-900 rounded-lg">
-            <h2 className="text-xl font-medium mb-4">Add Expense</h2>
-            <input
-              type="text"
-              name="category"
-              placeholder="Category"
-              value={expense.category}
-              onChange={handleExpenseChange}
-              className="w-full p-2 mb-4 bg-gray-800 text-white rounded-md"
-            />
-            <input
-              type="number"
-              name="amount"
-              placeholder="Amount"
-              value={expense.amount}
-              onChange={handleExpenseChange}
-              className="w-full p-2 mb-4 bg-gray-800 text-white rounded-md"
-            />
-            <button
-              onClick={() => handleSubmit('expense')}
-              className="w-full bg-red-500 py-2 rounded-md text-white hover:bg-red-700"
-            >
-              Submit Expense
-            </button>
-          </div>
-        </div>
-
-        {warning && (
-          <div className="mt-5 bg-red-700 text-center p-3 rounded-lg">
-            <p>{warning}</p>
-          </div>
-        )}
-
-        {/* Totals */}
-        <div className="mt-10 p-5 bg-gray-900 rounded-lg">
-          <h2 className="text-xl font-medium mb-4">Summary</h2>
-          <p>Total Income: ₱{totalIncome.toFixed(2)}</p>
-          <p>Total Expense: ₱{totalExpense.toFixed(2)}</p>
-          <p>Net Balance: ₱{(totalIncome - totalExpense).toFixed(2)}</p>
-        </div>
-
-        {/* History */}
-        <div className="mt-10 p-5 bg-gray-900 rounded-lg">
-          <h2 className="text-xl font-medium mb-4">Transaction History</h2>
-          <ul className="space-y-3">
-            {history.map((entry, index) => (
-              <li key={index} className="p-3 bg-gray-800 rounded-md">
-                <strong>{entry.type}:</strong> {entry.category} - ₱{entry.amount.toFixed(2)} 
-                <span className="block text-sm text-gray-400">{entry.date}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
+    <div className="container">
+      <h1>Income & Expense Tracker</h1>
+      {currentUser ? (  
+        <p>Logged in as: {currentUser.email}</p>
+      ) : (
+        <p>Please log in to track your income and expenses.</p>
+      )}
+      <div>
+        <h2>Add Income</h2>
+        <input
+          type="text"
+          name="category"
+          placeholder="Category"
+          value={income.category}
+          onChange={(e) => handleChange(e, 'income')}
+        />
+        <input
+          type="number"
+          name="amount"
+          placeholder="Amount"
+          value={income.amount}
+          onChange={(e) => handleChange(e, 'income')}
+        />
+        <button onClick={() => handleSubmit('income')}>Add Income</button>
       </div>
+      <div>
+        <h2>Add Expense</h2>
+        <input
+          type="text"
+          name="category"
+          placeholder="Category"
+          value={expense.category}
+          onChange={(e) => handleChange(e, 'expense')}
+        />
+        <input
+          type="number"
+          name="amount"
+          placeholder="Amount"
+          value={expense.amount}
+          onChange={(e) => handleChange(e, 'expense')}
+        />
+        <button onClick={() => handleSubmit('expense')}>Add Expense</button>
+      </div>
+      {warning && <p style={{ color: 'red' }}>{warning}</p>}
+      <h2>History</h2>
+      <ul>
+        {history.map((entry, index) => (
+          <li key={index}>
+            {entry.date}: {entry.type} - {entry.category} - ${entry.amount}
+          </li>
+        ))}
+      </ul>
+      <h2>Totals</h2>
+      <p>Total Income: ${totalIncome}</p>
+      <p>Total Expense: ${totalExpense}</p>
+      <p>Total Funds (Net Worth): ${totalFunds}</p>
     </div>
   );
 }
