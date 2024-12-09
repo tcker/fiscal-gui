@@ -5,6 +5,9 @@ import Signup from "./components/SignUp";
 import Dashboard from "./components/Dashboard";
 import LandingPage from "./components/LandingPage";
 import Error from "./components/Error"; // Error page if not authenticated
+
+import Inc_exp from "./components/features/Inc_exp"; 
+import EmergencyFund from "./components/features/EmergencyFund";
 import { getAuth, onAuthStateChanged } from "firebase/auth"; // Import Firebase auth
 import { Toaster } from "react-hot-toast"; // Import Toaster
 import './index.css';
@@ -37,6 +40,8 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/incomeAndExpense" element={<Inc_exp />} />
+        <Route path="/emergencyFund" element={<EmergencyFund />} />
         
         {/* Conditional route rendering based on authentication */}
         <Route
