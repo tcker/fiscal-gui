@@ -2,6 +2,7 @@ import { useState } from "react";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";  // Modular imports
 import { initializeApp } from "firebase/app";  // Modular imports
 import { useNavigate } from "react-router-dom";  // Import the useNavigate hook
+import { toast } from "react-hot-toast"; // Import toast for notifications
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -35,7 +36,7 @@ const Login = () => {
       const idToken = await userCredential.user.getIdToken();
 
       // Send the email, password, and ID token in the request body to the backend
-      const response = await fetch("http://localhost:8080/api/login", {
+      const response = await fetch("http://localhost:8080/api/login", { 
         method: "POST",
         headers: {
           "Content-Type": "application/json",  // Ensure the content type is JSON
@@ -50,29 +51,36 @@ const Login = () => {
       const data = await response.json();
       console.log("Response from backend:", data);  // Log the response from the backend
 
-      if (data.message === "Login successful!") {
+      // Check if the response contains the 'success' key and if it's true
+      if (data.success) {
         console.log("Login successful. Navigating to dashboard...");
-        setMessage("Login successful");
-        navigate("/dashboard");  // Directly navigate to the dashboard here
+        setMessage(data.message);  // Set the response message (e.g., "Login successful!")
+        toast.success("Successfully logged in!");  // Display success toast
+        navigate("/dashboard");  // Redirect to the dashboard page
       } else {
-        setError("Login failed.");
+        setError(data.message);  // If 'success' is false, show the error message from the backend
+        toast.error(data.message);  // Display error toast
       }
     } catch (err) {
       setError("Failed to login. Please try again.");
-      console.error("Error during login:", err);  // Log the error
+      toast.error("Failed to login. Please try again.");  // Show error toast
+      console.error("Error during login:", err);  // Log the error in case of any failure
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-lg">
-        <h2 className="text-2xl font-bold text-gray-800 text-center">Login</h2>
-        <form onSubmit={handleLogin} className="mt-6 space-y-4">
+    <div className="flex min-h-screen items-center justify-center bg-black text-white">
+      <div className="w-full max-w-md p-8 bg-neutral-900 rounded-lg shadow-lg">
+        <h2 className="text-center text-3xl font-semibold">Log In</h2>
+        <p className="mt-2 text-center text-sm text-neutral-400">
+          Enter your credentials to continue.
+        </p>
+        <form onSubmit={handleLogin} className="mt-6 space-y-6">
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
+              className="block text-sm font-medium text-neutral-300"
+            > 
               Email
             </label>
             <input
@@ -81,13 +89,14 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="mt-2 w-full rounded-md bg-neutral-800 border border-neutral-700 px-3 py-2 text-sm text-white placeholder-neutral-500 focus:border-white focus:ring focus:ring-white"
+              placeholder="you@example.com"
             />
           </div>
           <div>
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
+              className="block text-sm font-medium text-neutral-300"
             >
               Password
             </label>
@@ -97,29 +106,30 @@ const Login = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="mt-2 w-full rounded-md bg-neutral-800 border border-neutral-700 px-3 py-2 text-sm text-white placeholder-neutral-500 focus:border-white focus:ring focus:ring-white"
+              placeholder="********"
             />
           </div>
           <button
             type="submit"
-            className="w-full rounded-md bg-indigo-600 py-2 text-white font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="w-full rounded-md bg-white px-4 py-2 text-sm font-medium text-black hover:bg-neutral-200 focus:outline-none focus:ring focus:ring-neutral-700 focus:ring-offset-2"
           >
-            Login
+            Sign In
           </button>
         </form>
         {error && (
-          <p className="mt-4 text-sm text-red-500 text-center">{error}</p>
+          <p className="mt-4 text-sm text-center text-red-500">{error}</p>
         )}
         {message && (
-          <p className="mt-4 text-sm text-green-500 text-center">{message}</p>
+          <p className="mt-4 text-sm text-center text-green-500">{message}</p>
         )}
-        <p className="mt-4 text-sm text-gray-600 text-center">
-          Don't have an account?{" "}
+        <p className="mt-6 text-center text-sm text-neutral-400">
+          Don’t have an account yet?{" "}
           <a
             href="/signup"
-            className="font-medium text-indigo-600 hover:underline"
+            className="text-white font-medium underline hover:text-neutral-200"
           >
-            Sign up
+            Sign Up
           </a>
         </p>
       </div>

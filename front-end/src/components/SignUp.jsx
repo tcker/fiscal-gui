@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { toast } from 'react-hot-toast';  
 
 const Signup = () => {
     const [email, setEmail] = useState('');
@@ -9,60 +10,105 @@ const Signup = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        try {
-            // Make the signup request to your backend
-            const response = await axios.post('http://localhost:8080/api/signup', {
-                email: email,
-                password: password
-            });
 
-            // Check the response status and display appropriate message
-            if (response.data.success) {
-                setSuccess(true);
-                setMessage(response.data.message);
-                // Optionally, save the token received from backend for future use
-                localStorage.setItem('firebaseToken', response.data.token);
-            } else {
-                setSuccess(false);
-                setMessage(response.data.message);
+        // Create a promise that makes the signup request
+        const signupPromise = axios.post('http://localhost:8080/api/signup', {
+            email: email,
+            password: password
+        });
+
+        // Show toast with promise
+        toast.promise(
+            signupPromise,
+            {
+                loading: 'Creating your account...',
+                success: (response) => {
+                    if (response.data.success) {
+                        setSuccess(true);
+                        setMessage(response.data.message);
+                        return <b>Account created successfully!</b>;
+                    } else {
+                        setSuccess(false);
+                        setMessage(response.data.message);
+                        return <b>Signup failed: {response.data.message}</b>;
+                    }
+                },
+                error: (error) => {
+                    setSuccess(false);
+                    setMessage('An error occurred during signup.');
+                    return <b>Error: {error.message}</b>;
+                }
             }
-        } catch (error) {
-            setSuccess(false);
-            setMessage('Email already in used');
-        }
+        );
     };
 
     return (
-        <div>
-            <h2>Sign Up</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label>Email</label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Password</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                <button type="submit">Sign Up</button>
-            </form>
-            <div>
+        <div className="flex min-h-screen items-center justify-center bg-black text-white">
+            <div className="w-full max-w-md p-8 bg-neutral-900 rounded-lg shadow-lg">
+                <h2 className="text-center text-3xl font-semibold">Sign Up</h2>
+                <p className="mt-2 text-center text-sm text-neutral-400">
+                    Create an account to get started.
+                </p>
+                <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+                    <div>
+                        <label
+                            htmlFor="email"
+                            className="block text-sm font-medium text-neutral-300"
+                        >
+                            Email
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            className="mt-2 w-full rounded-md bg-neutral-800 border border-neutral-700 px-3 py-2 text-sm text-white placeholder-neutral-500 focus:border-white focus:ring focus:ring-white"
+                            placeholder="you@example.com"
+                        />
+                    </div>
+                    <div>
+                        <label
+                            htmlFor="password"
+                            className="block text-sm font-medium text-neutral-300"
+                        >
+                            Password
+                        </label>
+                        <input
+                            id="password"
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="mt-2 w-full rounded-md bg-neutral-800 border border-neutral-700 px-3 py-2 text-sm text-white placeholder-neutral-500 focus:border-white focus:ring focus:ring-white"
+                            placeholder="********"
+                        />
+                    </div>
+                    <button
+                        type="submit"
+                        className="w-full rounded-md bg-white px-4 py-2 text-sm font-medium text-black hover:bg-neutral-200 focus:outline-none focus:ring focus:ring-neutral-700 focus:ring-offset-2"
+                    >
+                        Sign Up
+                    </button>
+                </form>
                 {message && (
-                    <p style={{ color: success ? 'green' : 'red' }}>
+                    <p
+                        className={`mt-4 text-center text-sm ${
+                            success ? "text-green-500" : "text-red-500"
+                        }`}
+                    >
                         {message}
                     </p>
                 )}
+                <p className="mt-6 text-center text-sm text-neutral-400">
+                    Already have an account?{" "}
+                    <a
+                        href="/login"
+                        className="text-white font-medium underline hover:text-neutral-200"
+                    >
+                        Log in
+                    </a>
+                </p>
             </div>
         </div>
     );

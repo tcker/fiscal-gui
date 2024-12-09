@@ -13,7 +13,7 @@ const LandingPage = () => {
   const navigate = useNavigate();
 
   const handleGetStarted = () => {
-    navigate('/login');
+    navigate('/signup');
   };
 
   const handleSignUp = () => {
@@ -56,7 +56,7 @@ const LandingPage = () => {
       </div>
       <div style={styles.total}>Total count of registered users</div>
       <div style={styles.review}>Review</div>
-      <div style={styles.num1}>1.2k</div>
+      <div style={styles.num1}>0</div>
       <div style={styles.num2}>500</div>
       <div style={styles.take}>
         Take control of your

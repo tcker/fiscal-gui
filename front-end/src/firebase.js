@@ -1,6 +1,6 @@
-// src/firebase.js (Only used to initialize Firebase for authentication)
-import firebase from 'firebase/app';
-import 'firebase/auth';
+// src/firebase.js (Updated for Firebase v9+)
+import { initializeApp } from 'firebase/app'; // Modular import for Firebase
+import { getAuth } from 'firebase/auth'; // Modular import for Authentication
 
 const firebaseConfig = {
   apiKey: "AIzaSyDnBYIpQ8PyIQ787wTBYD1xy9FSo31VNSU",
@@ -13,8 +13,10 @@ const firebaseConfig = {
   measurementId: "G-QE50XLGR51"
 };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
-export default firebase;
+// Initialize Firebase Authentication
+const auth = getAuth(app);
+
+export { auth }; // Export the auth instance for use in other components
