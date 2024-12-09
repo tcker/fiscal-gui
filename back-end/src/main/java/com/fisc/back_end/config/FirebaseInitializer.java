@@ -3,6 +3,7 @@ package com.fisc.back_end.config;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.cloud.FirestoreClient;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -14,19 +15,16 @@ public class FirebaseInitializer {
 
     @PostConstruct
     public void initialize() throws IOException {
-        FileInputStream serviceAccount =
-                new FileInputStream("src/main/resources/serviceAccountKey.json");
+        FileInputStream serviceAccount = 
+            new FileInputStream("src/main/resources/serviceAccountKey.json");
 
-        // Get the GoogleCredentials from the service account
         GoogleCredentials credentials = GoogleCredentials.fromStream(serviceAccount);
 
-        // Initialize Firebase with the credentials
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(credentials)
                 .build();
 
-        // Initialize Firebase App
-        if (FirebaseApp.getApps().isEmpty()) {  // Check if Firebase App has been initialized
+        if (FirebaseApp.getApps().isEmpty()) {
             FirebaseApp.initializeApp(options);
         }
     }

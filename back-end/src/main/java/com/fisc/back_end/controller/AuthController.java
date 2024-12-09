@@ -1,7 +1,6 @@
 package com.fisc.back_end.controller;
 
 import com.fisc.back_end.service.FirebaseService;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseToken;
 import com.google.firebase.auth.UserRecord;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@CrossOrigin(origins = "http://localhost:5137")  // Allow cross-origin requests from your frontend
+@CrossOrigin(origins = "http://localhost:5137")
 public class AuthController {
 
     @Autowired
@@ -26,73 +25,57 @@ public class AuthController {
         String idToken = loginRequest.getIdToken();
 
         try {
-            // Verify the Firebase ID token using FirebaseService
             FirebaseToken decodedToken = firebaseService.verifyIdToken(idToken);
-
-            // If the email from the ID token matches the email sent from the client
             if (decodedToken.getEmail() != null && decodedToken.getEmail().equals(email)) {
                 return new ResponseEntity<>(new ApiResponse("Login successful!", true), HttpStatus.OK);
             } else {
                 return new ResponseEntity<>(new ApiResponse("Invalid email or token.", false), HttpStatus.BAD_REQUEST);
             }
-
         } catch (Exception e) {
             return new ResponseEntity<>(new ApiResponse("Error during authentication: " + e.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    // Sign-up endpoint to create a new user in Firebase Authentication
+    // Sign-up endpoint to create a new user in Firebase Authentication and Firestore
     @PostMapping("/api/signup")
     public ResponseEntity<ApiResponse> signUp(@RequestBody SignUpRequest signUpRequest) {
         String email = signUpRequest.getEmail();
         String password = signUpRequest.getPassword();
-    
+
         try {
-            System.out.println("Received sign-up request for email: " + email);
-            
             if (email == null || password == null || email.isEmpty() || password.isEmpty()) {
                 return new ResponseEntity<>(new ApiResponse("Email and password must not be empty", false), HttpStatus.BAD_REQUEST);
             }
-    
-            UserRecord.CreateRequest request = new UserRecord.CreateRequest()
-                    .setEmail(email)
-                    .setPassword(password);
-            System.out.println("Creating user in Firebase...");
-            UserRecord userRecord = FirebaseAuth.getInstance().createUser(request);
-            System.out.println("User created successfully with UID: " + userRecord.getUid());
-    
-            String firebaseToken = FirebaseAuth.getInstance().createCustomToken(userRecord.getUid());
-    
+
+            UserRecord userRecord = firebaseService.createUser(email, password);
+            String firebaseToken = firebaseService.generateCustomToken(userRecord.getUid());
+
             ApiResponse response = new ApiResponse("User created successfully!", true, firebaseToken);
             return new ResponseEntity<>(response, HttpStatus.CREATED);
         } catch (Exception e) {
-            // Log the exception stack trace
             e.printStackTrace();
-            return new ResponseEntity<>(new ApiResponse("Email already been used", false), HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(new ApiResponse("Error creating user: " + e.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    // API response model class for cleaner response structure
+    // API response model class
     public static class ApiResponse {
         private String message;
         private boolean success;
         private String token;
 
-        // Constructor for ApiResponse
         public ApiResponse(String message, boolean success) {
             this.message = message;
             this.success = success;
             this.token = null;
         }
 
-        // Constructor for ApiResponse including token
         public ApiResponse(String message, boolean success, String token) {
             this.message = message;
             this.success = success;
             this.token = token;
         }
 
-        // Getters and setters
         public String getMessage() {
             return message;
         }
@@ -118,7 +101,7 @@ public class AuthController {
         }
     }
 
-    // LoginRequest class to capture the incoming request data for login
+    // LoginRequest class
     public static class LoginRequest {
         private String email;
         private String idToken;
@@ -140,7 +123,7 @@ public class AuthController {
         }
     }
 
-    // SignUpRequest class to capture the incoming request data for sign-up
+    // SignUpRequest class
     public static class SignUpRequest {
         private String email;
         private String password;
