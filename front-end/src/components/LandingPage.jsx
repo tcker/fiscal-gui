@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import firebaseApp from '../firebase'; // Make sure to initialize firebase properly in this file
 import fiscaWhite from '../assets/images/LOGO.png';
 import fiscalLogo from '../assets/images/FISCAL_LOGO.png';
 import gcashDark from '../assets/images/GCASH_DARK_MODE.png';
@@ -8,9 +10,21 @@ import unionDark from '../assets/images/UNION_BANK_DARK_MODE.png';
 import bpiDark from '../assets/images/BPI_DARK_MODE.png';
 import landbankDark from '../assets/images/LANDBANK_DARK_MODE.png';
 
-
 const LandingPage = () => {
+  const [userCount, setUserCount] = useState(0);
   const navigate = useNavigate();
+  
+  // Fetch total users from Firestore
+  useEffect(() => {
+    const fetchUserCount = async () => {
+      const db = getFirestore(firebaseApp);
+      const usersRef = collection(db, 'users'); // Assuming 'users' is the collection where users are saved
+      const snapshot = await getDocs(usersRef);
+      setUserCount(snapshot.size); // Get the size of the snapshot to know the number of users
+    };
+
+    fetchUserCount();
+  }, []);
 
   const handleGetStarted = () => {
     navigate('/signup');
@@ -56,7 +70,7 @@ const LandingPage = () => {
       </div>
       <div style={styles.total}>Total count of registered users</div>
       <div style={styles.review}>Review</div>
-      <div style={styles.num1}>0</div>
+      <div style={styles.num1}>1.2k</div> {/* Displaying the user count */}
       <div style={styles.num2}>500</div>
       <div style={styles.take}>
         Take control of your
@@ -112,13 +126,6 @@ const styles = {
     position: 'absolute',
     top: '19px',
     left: '910px',
-  // },
-  // login: {
-  //   fontSize: '18px',
-  //   fontWeight: 'lighter',
-  //   position: 'absolute',
-  //   top: '200px',
-  //   left: '1320px',
   },
   time: {
     fontSize: '24px',
@@ -163,39 +170,39 @@ const styles = {
     left: '100px',
   },
   getStartedButton: {
-    width: '285px', // Slightly larger for Get Started button
+    width: '285px',
     height: '50px',
-    backgroundColor: 'white', // Red background for Get Started
+    backgroundColor: 'white',
     color: 'black',
-    borderRadius: '8px', // More rounded corners for visual contrast
+    borderRadius: '8px',
     fontFamily: "'Reddit Sans', sans-serif",
     fontSize: '18px',
     fontWeight: 'bold',
     border: 'none',
     cursor: 'pointer',
     position: 'absolute',
-    top: '450px',  // Position for the "Get Started" button
+    top: '450px',
     left: '100px',
   },
   loginButton: {
     width: '90px',
     height: '40px',
-    backgroundColor: 'white', // Green background for Login
+    backgroundColor: 'white',
     color: 'black',
-    borderRadius: '4px', // Rounded corners
+    borderRadius: '4px',
     fontFamily: "'Reddit Sans', sans-serif",
     fontSize: '16px',
     fontWeight: 'bold',
     border: 'none',
     cursor: 'pointer',
     position: 'absolute',
-    top: '20px', // Position it below Sign Up button
+    top: '20px',
     left: '1290px',
   },
   signUpButton: {
     width: '90px',
     height: '40px',
-    backgroundColor: 'white', // Green background for Sign Up
+    backgroundColor: 'white',
     color: 'black',
     borderRadius: '4px',
     fontFamily: "'Reddit Sans', sans-serif",
@@ -204,7 +211,7 @@ const styles = {
     cursor: 'pointer',
     position: 'absolute',
     top: '19px',
-    left: '1400px', // Positioned beside the Login button
+    left: '1400px',
   },
   trusted: {
     fontSize: '22px',
@@ -260,7 +267,7 @@ const styles = {
     height: '800px',
     position: 'absolute',
     right: '220px',
-  },  
+  },
 };
 
 export default LandingPage;

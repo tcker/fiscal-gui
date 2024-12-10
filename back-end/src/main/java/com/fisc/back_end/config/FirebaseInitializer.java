@@ -3,7 +3,7 @@ package com.fisc.back_end.config;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import com.google.firebase.cloud.FirestoreClient;
+// import com.google.firebase.cloud.FirestoreClient;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;

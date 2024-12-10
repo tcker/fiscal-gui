@@ -18,43 +18,84 @@ public class AuthController {
     @Autowired
     private FirebaseService firebaseService;
 
-    // Existing login endpoint using FirebaseService to verify ID token
     @PostMapping("/api/login")
     public ResponseEntity<ApiResponse> login(@RequestBody LoginRequest loginRequest) {
-        String email = loginRequest.getEmail();
-        String idToken = loginRequest.getIdToken();
+        AuthHandler handler = new LoginHandler(firebaseService, loginRequest);
+        return handler.handleRequest();
+    }
 
-        try {
-            FirebaseToken decodedToken = firebaseService.verifyIdToken(idToken);
-            if (decodedToken.getEmail() != null && decodedToken.getEmail().equals(email)) {
-                return new ResponseEntity<>(new ApiResponse("Login successful!", true), HttpStatus.OK);
-            } else {
-                return new ResponseEntity<>(new ApiResponse("Invalid email or token.", false), HttpStatus.BAD_REQUEST);
+    @PostMapping("/api/signup")
+    public ResponseEntity<ApiResponse> signUp(@RequestBody SignUpRequest signUpRequest) {
+        AuthHandler handler = new SignUpHandler(firebaseService, signUpRequest);
+        return handler.handleRequest();
+    }
+
+    // Abstract Base Class for Auth Handlers
+    abstract static class AuthHandler {
+        protected final FirebaseService firebaseService;
+
+        public AuthHandler(FirebaseService firebaseService) {
+            this.firebaseService = firebaseService;
+        }
+
+        public abstract ResponseEntity<ApiResponse> handleRequest();
+    }
+
+    // Login Handler (inherits from AuthHandler)
+    static class LoginHandler extends AuthHandler {
+        private final LoginRequest loginRequest;
+
+        public LoginHandler(FirebaseService firebaseService, LoginRequest loginRequest) {
+            super(firebaseService);
+            this.loginRequest = loginRequest;
+        }
+
+        @Override
+        public ResponseEntity<ApiResponse> handleRequest() {
+            String email = loginRequest.getEmail();
+            String idToken = loginRequest.getIdToken();
+
+            try {
+                FirebaseToken decodedToken = firebaseService.verifyIdToken(idToken);
+                if (decodedToken.getEmail() != null && decodedToken.getEmail().equals(email)) {
+                    return new ResponseEntity<>(new ApiResponse("Login successful!", true), HttpStatus.OK);
+                } else {
+                    return new ResponseEntity<>(new ApiResponse("Invalid email or token.", false), HttpStatus.BAD_REQUEST);
+                }
+            } catch (Exception e) {
+                return new ResponseEntity<>(new ApiResponse("Error during authentication: " + e.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
             }
-        } catch (Exception e) {
-            return new ResponseEntity<>(new ApiResponse("Error during authentication: " + e.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    // Sign-up endpoint to create a new user in Firebase Authentication and Firestore
-    @PostMapping("/api/signup")
-    public ResponseEntity<ApiResponse> signUp(@RequestBody SignUpRequest signUpRequest) {
-        String email = signUpRequest.getEmail();
-        String password = signUpRequest.getPassword();
+    // Sign-Up Handler (inherits from AuthHandler)
+    static class SignUpHandler extends AuthHandler {
+        private final SignUpRequest signUpRequest;
 
-        try {
-            if (email == null || password == null || email.isEmpty() || password.isEmpty()) {
-                return new ResponseEntity<>(new ApiResponse("Email and password must not be empty", false), HttpStatus.BAD_REQUEST);
+        public SignUpHandler(FirebaseService firebaseService, SignUpRequest signUpRequest) {
+            super(firebaseService);
+            this.signUpRequest = signUpRequest;
+        }
+
+        @Override
+        public ResponseEntity<ApiResponse> handleRequest() {
+            String email = signUpRequest.getEmail();
+            String password = signUpRequest.getPassword();
+
+            try {
+                if (email == null || password == null || email.isEmpty() || password.isEmpty()) {
+                    return new ResponseEntity<>(new ApiResponse("Email and password must not be empty", false), HttpStatus.BAD_REQUEST);
+                }
+
+                UserRecord userRecord = firebaseService.createUser(email, password);
+                String firebaseToken = firebaseService.generateCustomToken(userRecord.getUid());
+
+                ApiResponse response = new ApiResponse("User created successfully!", true, firebaseToken);
+                return new ResponseEntity<>(response, HttpStatus.CREATED);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new ResponseEntity<>(new ApiResponse("Error creating user: " + e.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
             }
-
-            UserRecord userRecord = firebaseService.createUser(email, password);
-            String firebaseToken = firebaseService.generateCustomToken(userRecord.getUid());
-
-            ApiResponse response = new ApiResponse("User created successfully!", true, firebaseToken);
-            return new ResponseEntity<>(response, HttpStatus.CREATED);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ResponseEntity<>(new ApiResponse("Error creating user: " + e.getMessage(), false), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -80,24 +121,12 @@ public class AuthController {
             return message;
         }
 
-        public void setMessage(String message) {
-            this.message = message;
-        }
-
         public boolean isSuccess() {
             return success;
         }
 
-        public void setSuccess(boolean success) {
-            this.success = success;
-        }
-
         public String getToken() {
             return token;
-        }
-
-        public void setToken(String token) {
-            this.token = token;
         }
     }
 
@@ -145,3 +174,4 @@ public class AuthController {
         }
     }
 }
+    

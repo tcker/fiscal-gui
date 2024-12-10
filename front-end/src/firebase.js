@@ -1,6 +1,6 @@
-// src/firebase.js (Updated for Firebase v9+)
 import { initializeApp } from 'firebase/app'; // Modular import for Firebase
 import { getAuth } from 'firebase/auth'; // Modular import for Authentication
+import { getFirestore } from 'firebase/firestore'; // Modular import for Firestore
 
 const firebaseConfig = {
   apiKey: "AIzaSyDnBYIpQ8PyIQ787wTBYD1xy9FSo31VNSU",
@@ -19,4 +19,7 @@ const app = initializeApp(firebaseConfig);
 // Initialize Firebase Authentication
 const auth = getAuth(app);
 
-export { auth }; // Export the auth instance for use in other components
+// Initialize Firestore
+const db = getFirestore(app); // This initializes Firestore
+
+export default { auth, db }; // Export both auth and db instances

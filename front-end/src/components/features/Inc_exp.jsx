@@ -35,11 +35,11 @@ export default function IncExp() {
   const [expense, setExpense] = useState({ category: '', amount: 0 });
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
-  const [totalFunds, setTotalFunds] = useState(0);  // Added state for totalFunds
+  const [totalFunds, setTotalFunds] = useState(0);
   const [history, setHistory] = useState([]);
   const [warning, setWarning] = useState('');
   const [currentUser, setCurrentUser] = useState(null);
-  const [userId, setUserId] = useState(null); 
+  const [userId, setUserId] = useState(null);
 
   // Fetch and set current user and Firestore ID
   useEffect(() => {
@@ -94,7 +94,7 @@ export default function IncExp() {
   const updateTotalFunds = async (newIncome, newExpense) => {
     const newTotalFunds = newIncome - newExpense;
     setTotalFunds(newTotalFunds);
-    
+
     // Update Firestore with new totalFunds
     if (userId) {
       const userRef = doc(db, 'users', userId);
@@ -145,62 +145,116 @@ export default function IncExp() {
   };
 
   return (
-    <div className="container">
-      <h1>Income & Expense Tracker</h1>
-      {currentUser ? (  
-        <p>Logged in as: {currentUser.email}</p>
-      ) : (
-        <p>Please log in to track your income and expenses.</p>
-      )}
-      <div>
-        <h2>Add Income</h2>
-        <input
-          type="text"
-          name="category"
-          placeholder="Category"
-          value={income.category}
-          onChange={(e) => handleChange(e, 'income')}
-        />
-        <input
-          type="number"
-          name="amount"
-          placeholder="Amount"
-          value={income.amount}
-          onChange={(e) => handleChange(e, 'income')}
-        />
-        <button onClick={() => handleSubmit('income')}>Add Income</button>
+    <div className="flex bg-black text-white min-h-screen">
+      {/* Left Sidebar */}
+      <div className="w-1/4 bg-black p-4">
+        <h2 className="text-xl mb-6">Categories</h2>
+        <ul className="space-y-4 text-3xl">
+          <li>Income</li>
+          <ul className="space-y-2 ml-4 font-size-4">
+            <li>💼 Business</li>
+            <li>💰 Investment</li>
+            {/* <li>Gross Pay</li> */}
+          </ul>
+          <li>Expense</li>
+          <ul className="space-y-2 ml-4">
+            <li>🛒 Groceries</li>
+            <li>🍕 Food</li>
+            {/* <li>Rent</li> */}
+            {/* <li>Utilities</li> */}
+            <li>🚰 Water</li>
+            <li>⚡ Meralco Bill</li>
+          </ul>
+        </ul>
       </div>
-      <div>
-        <h2>Add Expense</h2>
-        <input
-          type="text"
-          name="category"
-          placeholder="Category"
-          value={expense.category}
-          onChange={(e) => handleChange(e, 'expense')}
-        />
-        <input
-          type="number"
-          name="amount"
-          placeholder="Amount"
-          value={expense.amount}
-          onChange={(e) => handleChange(e, 'expense')}
-        />
-        <button onClick={() => handleSubmit('expense')}>Add Expense</button>
+
+      {/* Right Content */}
+      <div className="w-3/4 p-8">
+        <h1 className="text-3xl font-semibold text-center mb-8">Income & Expense Tracker</h1>
+        {currentUser ? (
+          <p className="text-center text-lg">Logged in as: <strong>{currentUser.email}</strong></p>
+        ) : (
+          <p className="text-center text-lg">Please log in to track your income and expenses.</p>
+        )}
+
+        <div className="space-y-8">
+          {/* Income Form */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Add Income</h2>
+            <input
+              type="text"
+              name="category"
+              placeholder="Category"
+              value={income.category}
+              onChange={(e) => handleChange(e, 'income')}
+              className="w-full p-4 bg-gray-800 text-white border border-gray-700 rounded-lg mb-4"
+            />
+            <input
+              type="number"
+              name="amount"
+              placeholder="Amount"
+              value={income.amount}
+              onChange={(e) => handleChange(e, 'income')}
+              className="w-full p-4 bg-gray-800 text-white border border-gray-700 rounded-lg mb-4"
+            />
+            <button
+              onClick={() => handleSubmit('income')}
+              className="w-full p-4 bg-green-500 text-white rounded-lg"
+            >
+              Add Income
+            </button>
+          </div>
+
+          {/* Expense Form */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4">Add Expense</h2>
+            <input
+              type="text"
+              name="category"
+              placeholder="Category"
+              value={expense.category}
+              onChange={(e) => handleChange(e, 'expense')}
+              className="w-full p-4 bg-gray-800 text-white border border-gray-700 rounded-lg mb-4"
+            />
+            <input
+              type="number"
+              name="amount"
+              placeholder="Amount"
+              value={expense.amount}
+              onChange={(e) => handleChange(e, 'expense')}
+              className="w-full p-4 bg-gray-800 text-white border border-gray-700 rounded-lg mb-4"
+            />
+            <button
+              onClick={() => handleSubmit('expense')}
+              className="w-full p-4 bg-red-500 text-white rounded-lg"
+            >
+              Add Expense
+            </button>
+          </div>
+          
+          {warning && <p className="text-center text-red-500">{warning}</p>}
+
+          {/* Totals */}
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold">Totals</h2>
+            <p>Total Income: <strong>${totalIncome}</strong></p>
+            <p>Total Expense: <strong>${totalExpense}</strong></p>
+            <p>Total Funds (Net Worth): <strong>${totalFunds}</strong></p>
+          </div>
+
+          {/* History */}
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold">History</h2>
+            <ul>
+              {history.map((entry, index) => (
+                <li key={index} className="mb-4">
+                  {entry.date}: <strong>{entry.type}</strong> - {entry.category} - <strong>${entry.amount}</strong>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </div>
-      {warning && <p style={{ color: 'red' }}>{warning}</p>}
-      <h2>History</h2>
-      <ul>
-        {history.map((entry, index) => (
-          <li key={index}>
-            {entry.date}: {entry.type} - {entry.category} - ${entry.amount}
-          </li>
-        ))}
-      </ul>
-      <h2>Totals</h2>
-      <p>Total Income: ${totalIncome}</p>
-      <p>Total Expense: ${totalExpense}</p>
-      <p>Total Funds (Net Worth): ${totalFunds}</p>
     </div>
   );
 }
