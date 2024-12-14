@@ -29,7 +29,7 @@ The **front-end** is built using [ReactJS](https://reactjs.org/). It is responsi
 
 The **back-end** is implemented using:  
 - **Spring Boot** (Java) for the core application logic.  
-- **Firebase** for database management as a Backend-as-a-Service (BaaS).  
+- **Firestore Database** for database management.  
 - **Apache Maven** for dependency management and project organization.  
 
 <div align="center"> 
