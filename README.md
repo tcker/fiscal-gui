@@ -31,3 +31,13 @@ The **back-end** is implemented using:
 - **Spring Boot** (Java) for the core application logic.  
 - **Firebase** for database management as a Backend-as-a-Service (BaaS).  
 - **Apache Maven** for dependency management and project organization.  
+
+<div align="center"> 
+
+## Initial UI Overview
+
+### Landing Page
+
+![Landing Page](https://github.com/tcker/fiscal-gui/blob/master/fiscal/uiblack.png)
+
+</div>
