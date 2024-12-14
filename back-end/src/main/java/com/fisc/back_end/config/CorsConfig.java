@@ -8,7 +8,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class CorsConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        // Update the allowed origin to match your React app's URL
         registry.addMapping("/**")
                 .allowedOrigins("http://localhost:5173")  // Allow React app running on port 5173
                 .allowedMethods("GET", "POST", "PUT", "DELETE")  // Allow specific HTTP methods
