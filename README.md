@@ -11,5 +11,11 @@
 
 </pre>
 
+<div align="center">
+
+#### **In Partial Fulfillment of the Requirements for <br> ITE210/210L Object-Oriented Programming Laboratory & Lecture**
+
+</div>
+
 </div>
 
