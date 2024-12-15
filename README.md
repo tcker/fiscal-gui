@@ -37,7 +37,7 @@ The **back-end** is implemented using:
 - The **AuthController** utilizes concepts of Object-Oriented Programming (OOP), including polymorphism and inheritance.  
 - [View AuthController](https://github.com/tcker/fiscal-gui/blob/master/back-end/src/main/java/com/fisc/back_end/controller/AuthController.java)
 
-
+    
 <div align="center"> 
 
 ## Initial UI Overview
