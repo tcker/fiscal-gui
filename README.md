@@ -46,4 +46,24 @@ The **back-end** is implemented using:
 
 ![Landing Page](https://github.com/tcker/fiscal-gui/blob/master/fiscal/uiblack.png)
 
+## Login Page
+
+![Landing Page](https://github.com/tcker/fiscal-gui/blob/master/fiscal/fiscal_login.png)
+
+## Sign Up Page
+
+![Landing Page](https://github.com/tcker/fiscal-gui/blob/master/fiscal/fiscal_signup.png)
+
+## DashBoard
+
+![Landing Page](https://github.com/tcker/fiscal-gui/blob/master/fiscal/fiscal_dashboard.png)
+
+## Income & Expense Feature
+
+![Landing Page](https://github.com/tcker/fiscal-gui/blob/master/fiscal/fiscal_inc_exp.png)
+
+## Emergency Fund
+
+![Landing Page](https://github.com/tcker/fiscal-gui/blob/master/fiscal/fiscal_emergencyfund.png)
+
 </div>
